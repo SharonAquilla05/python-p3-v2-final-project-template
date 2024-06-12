@@ -1,25 +1,30 @@
 import sqlite3
 
 class Database:
-    def __init__(self):
-        self.connection = sqlite3.connect('tasks.db')
+    def __init__(self, db_name='to_do.db'):
+        self.db_name = db_name
         self.create_tables()
 
+    def connect(self):
+        return sqlite3.connect(self.db_name)
+
+    @classmethod
     def create_tables(self):
-        with self.connection:
-            self.connection.execute("""
+        with self.connect() as conn:
+            cursor = conn.cursor()
+            cursor.execute('''
             CREATE TABLE IF NOT EXISTS users (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 name TEXT NOT NULL
             )
-            """)
-            self.connection.execute("""
+            ''')
+            cursor.execute('''
             CREATE TABLE IF NOT EXISTS categories (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 name TEXT NOT NULL
             )
-            """)
-            self.connection.execute("""
+            ''')
+            cursor.execute('''
             CREATE TABLE IF NOT EXISTS tasks (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 title TEXT NOT NULL,
@@ -28,16 +33,5 @@ class Database:
                 FOREIGN KEY(user_id) REFERENCES users(id),
                 FOREIGN KEY(category_id) REFERENCES categories(id)
             )
-            """)
-
-    def __enter__(self):
-        return self.connection
-
-    def __exit__(self, exc_type, exc_value, traceback):
-        if isinstance(exc_value, Exception):
-            self.connection.rollback()
-        else:
-            self.connection.commit()
-        self.connection.close()
-
-database = Database()
+            ''')
+            conn.commit()

@@ -1,121 +1,97 @@
 import click
-from models import User, Task, Category
+from models import User, Task, Category, Database
+
+# Initialize database
+Database()
 
 @click.group()
 def cli():
-    """Task Management CLI"""
+    """Command Line Interface for managing users, categories, and tasks."""
     pass
 
-@cli.group()
-def user():
-    """Commands related to users"""
-    pass
+@click.command()
+def add_user():
+    """Add a new user to the system."""
+    username = click.prompt("Input your username", type=str)
+    User.create(username)
+    click.echo(f"User {username} added successfully")
 
-@user.command()
-def create():
-    name = click.prompt("Enter user name", type=str)
-    user = User(name)
-    user.save()
-    click.echo(f"User '{name}' created successfully")
-
-@user.command()
-def delete():
-    user_id = click.prompt("Enter user ID to delete", type=int)
-    User.delete(user_id)
-    click.echo(f"User with ID {user_id} deleted successfully")
-
-@user.command()
-def list():
+@click.command()
+def list_users():
+    """List all users."""
     users = User.get_all()
-    for user in users:
-        click.echo(f"{user[0]}: {user[1]}")
-
-@user.command()
-def find():
-    user_id = click.prompt("Enter user ID to find", type=int)
-    user = User.find_by_id(user_id)
-    if user:
-        click.echo(f"User: {user[1]}")
+    if not users:
+        click.echo("No users found.")
     else:
-        click.echo("User not found")
+        for user in users:
+            click.echo(f"ID: {user[0]}, Name: {user[1]}")
 
-@cli.group()
-def category():
-    """Commands related to categories"""
-    pass
+@click.command()
+def add_category():
+    """Add a new category."""
+    category_name = click.prompt("Enter category name", type=str)
+    Category.create(category_name)
+    click.echo(f"Category {category_name} added successfully")
 
-@category.command()
-def create():
-    name = click.prompt("Enter category name", type=str)
-    category = Category(name)
-    category.save()
-    click.echo(f"Category '{name}' created successfully")
-
-@category.command()
-def delete():
-    category_id = click.prompt("Enter category ID to delete", type=int)
-    Category.delete(category_id)
-    click.echo(f"Category with ID {category_id} deleted successfully")
-
-@category.command()
-def list():
+@click.command()
+def list_categories():
+    """List all categories."""
     categories = Category.get_all()
-    for category in categories:
-        click.echo(f"{category[0]}: {category[1]}")
-
-@category.command()
-def find():
-    category_id = click.prompt("Enter category ID to find", type=int)
-    category = Category.find_by_id(category_id)
-    if category:
-        click.echo(f"Category: {category[1]}")
+    if not categories:
+        click.echo("No categories found.")
     else:
-        click.echo("Category not found")
+        for category in categories:
+            click.echo(f"ID: {category[0]}, Name: {category[1]}")
 
-@cli.group()
-def task():
-    """Commands related to tasks"""
-    pass
-
-@task.command()
-def create():
-    title = click.prompt("Enter task title", type=str)
+@click.command()
+def add_task():
+    """Add a new task."""
     user_id = click.prompt("Enter user ID", type=int)
     category_id = click.prompt("Enter category ID", type=int)
-    task = Task(title, user_id, category_id)
-    task.save()
-    click.echo(f"Task '{title}' created successfully")
+    task_title = click.prompt("Enter task title", type=str)
+    Task.create(task_title, user_id, category_id)
+    click.echo(f"Task {task_title} added successfully")
 
-@task.command()
-def delete():
+@click.command()
+def list_tasks():
+    """List all tasks."""
+    tasks = Task.get_all()
+    if not tasks:
+        click.echo("No tasks found.")
+    else:
+        for task in tasks:
+            click.echo(f"ID: {task[0]}, Title: {task[1]}, User ID: {task[2]}, Category ID: {task[3]}")
+
+@click.command()
+def delete_user():
+    """Delete a user by ID."""
+    user_id = click.prompt("Enter user ID to delete", type=int)
+    User.delete(user_id)
+    click.echo(f"User ID {user_id} deleted successfully")
+
+@click.command()
+def delete_category():
+    """Delete a category by ID."""
+    category_id = click.prompt("Enter category ID to delete", type=int)
+    Category.delete(category_id)
+    click.echo(f"Category ID {category_id} deleted successfully")
+
+@click.command()
+def delete_task():
+    """Delete a task by ID."""
     task_id = click.prompt("Enter task ID to delete", type=int)
     Task.delete(task_id)
-    click.echo(f"Task with ID {task_id} deleted successfully")
+    click.echo(f"Task ID {task_id} deleted successfully")
 
-@task.command()
-def list():
-    tasks = Task.get_all()
-    for task in tasks:
-        click.echo(f"{task[0]}: {task[1]} (User ID: {task[2]}, Category ID: {task[3]})")
-
-@task.command()
-def find():
-    task_id = click.prompt("Enter task ID to find", type=int)
-    task = Task.find_by_id(task_id)
-    if task:
-        click.echo(f"Task: {task[1]} (User ID: {task[2]}, Category ID: {task[3]})")
-    else:
-        click.echo("Task not found")
-
-@task.command()
-def find_by_user():
-    user_id = click.prompt("Enter user ID to find tasks for", type=int)
-    tasks = Task.find_by_user(user_id)
-    for task in tasks:
-        click.echo(f"{task[0]}: {task[1]} (Category ID: {task[3]})")
+cli.add_command(add_user)
+cli.add_command(list_users)
+cli.add_command(add_category)
+cli.add_command(list_categories)
+cli.add_command(add_task)
+cli.add_command(list_tasks)
+cli.add_command(delete_user)
+cli.add_command(delete_category)
+cli.add_command(delete_task)
 
 if __name__ == '__main__':
     cli()
-
-
-
